@@ -1,0 +1,14 @@
+0_Bienvenido_a_Estructura_de_Datos.csv
+1_Push_and_Pop_back.csv
+2_Push_y_Pop_de_Lista_Enlazada.csv
+3_Simple_Queue.csv
+4_Pila_Completa.csv
+5_Circular_Queue.csv
+6_The_Dequeue_Game.csv
+7_Listas_Enlazadas_con_Cola.csv
+8_Corchetes_Balanceados.csv
+9_Lista_Ordenada_con_arreglos.csv
+10_Dynamic_Circular_Array_II.csv
+11_Dynamic_Circular_Array.csv
+12_Tree.csv
+13_Arbol_Completo_infijo.csv
