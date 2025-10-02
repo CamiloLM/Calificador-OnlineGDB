@@ -51,7 +51,7 @@ class Assignment:
         if result.strip().lower() == "compile error":
             return 0.0
 
-        passed, total = map(int,re.findall(r"\d+", result))
+        passed, total = map(int, re.findall(r"\d+", result))
 
         if passed > 0:
             f = passed / total if total > 0 else 0
@@ -143,7 +143,7 @@ class Notes:
         return self._df_list
 
     def save_notes(self, file_name):
-        """Guarda todas las notas en un solo archivo .csv"""
+        """Guarda todas las notas en un solo archivo file_name.csv"""
         # Buscar todos los nombres de los estudiantes
         all_students = set()
         for assignment in self._df_list:
@@ -159,56 +159,31 @@ class Notes:
             )
 
         output_path = os.path.join(os.getcwd(), file_name)
-
-        if os.path.exists(output_path):
-            choice = input(
-                f"El achivo {file_name} ya existe. Desea reemplazarlo? (Y/N): "
-            )
-            if choice.lower != "y":
-                print("El archivo no fue reemplazado")
-                return
-
         notes_df.to_csv(output_path, index=False, encoding="utf-8")
+
         print(f"Notas guardadas en {output_path}")
 
 
 if __name__ == "__main__":
-    # Para una sola tarea
-    a_path = "./exports/8_Corchetes_Balanceados.csv"
-    a = Assignment(a_path)
-    a.grade_students()
-    print(a)  # Imprime las primeras 5 notas
-    a.save_assingment("graded")
+    # Carga los archivos .csv en exports/ en una lista
+    folder = "exports/"
+    csv_paths = [
+        os.path.join(folder, f) for f in os.listdir(folder) if f.endswith(".csv")
+    ]
+    assignments = [Assignment(path) for path in csv_paths]
 
-    # Para todas las notas
-    notes = Notes("graded/")
+    # Recorre la lista de las tareas, las califica y las guarda en la carpeta graded/
+    for a in assignments:
+        a.grade_students()
+        a.save_assingment("graded")
+
+    # Carga todas las notas calificadas en la carpeta graded/ y las guarda en el archivo notes.csv
+    notes = Notes("graded")
     notes.load_assignments()
+    notes.save_notes("notes.csv")
 
+    # Recorre todas las notas que estan en la clase Notes y muestra los primeros 5 resultados
     for a in notes.df_list:
-        print("----")
+        print("\n----------------------------")
         print(a.get_assignment_name())
         print(a)
-
-    # a.save_assingment("graded")
-
-    # Probar la funcion de calcular las notas
-    # b = Assignment.__new__(Assignment)
-
-    # test_cases = [
-    #     ("Compile error", "9/22/2025, 7:12:41 AM"),
-    #     ("1 passed of 1", "9/22/2025, 7:12:41 AM"),
-    #     ("1 passed of 2", "9/22/2025, 7:12:41 AM"),
-    #     ("2 passed of 2", "9/22/2025, 7:12:41 AM"),
-    #     ("2 passed of 3", "9/22/2025, 7:12:41 AM"),
-    #     ("4 passed of 6", "9/22/2025, 7:12:41 AM"),
-    #     ("1 passed of 6", "9/22/2025, 7:12:41 AM"),
-    #     ("0 passed of 6", "9/22/2025, 7:12:41 AM"),
-    #     ("3 passed of 6", "9/22/2025, 7:12:41 AM"),
-    #     ("2 passed of 3", "9/22/2025, 7:12:41 AM (late submission)"),
-    # ]
-
-    # for result, date in test_cases:
-    #     grade = b.calculate_grade(result, date)
-    #     print(
-    #         f"Result: {result:20} | Date: {date:30} | Grade: {grade}"
-    #     )
