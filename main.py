@@ -1,6 +1,9 @@
 import glob
+import json
 import os
 import re
+from datetime import datetime
+from math import floor
 
 import pandas as pd
 
@@ -30,16 +33,45 @@ class Assignment:
         return self._path
 
     def clean_dates(self):
-        """Corrige la celda para que no tenga saltos de linea o espacios adiconales"""
-        self.df["Submission Date"] = (
-            self.df["Submission Date"]
-            .str.replace("\n", "", regex=False)
-            .str.strip()
-            .str.replace(r"\s+\(late submission\)", " (late submission)", regex=True)
+        """
+        Normaliza las fechas y crea una nueva columna Submission Hour.
+        """
+        # El regex funciona de alguna forma
+        extracted = self.df["Submission Date"].str.extract(
+            r"(?P<date>\d{1,2}/\d{1,2}/\d{4}),\s+(?P<hour>\d{1,2}:\d{2}:\d{2}\s+[APM]{2})"
         )
 
+        self.df["Submission Date"] = extracted["date"]
+        self.df["Submission Hour"] = extracted["hour"]
+
+    def calculate_penalty(self, sub_dt):
+        name = self.get_assignment_name()
+        date_str = ""
+        with open("due_dates.json", "r") as file:
+            data = json.load(file)
+            for key, value in data.items():
+                if name == key:
+                    date_str = value
+            if not date_str:
+                raise ValueError(
+                    "La asignacion no tiene fecha asignada en el archivo .json"
+                )
+
+        due_dt = datetime.strptime(date_str, "%m/%d/%Y %I:%M %p")
+
+        if sub_dt <= due_dt:
+            return 0
+        else:
+            delta = sub_dt - due_dt
+            penalty = 0.5
+            if delta.days > 0:
+                # TODO: Interpretacion diferente de las 12 hroas
+                extra_hours = (delta.days - 1) * 24 + delta.seconds // 3600
+                penalty += (extra_hours // 12) * 0.5
+            return penalty
+
     def calculate_grade(
-        self, result: str, submission_date: str, k: float = 0.8
+        self, result: str, date: str, time: str, k: float = 0.8
     ) -> float:
         """
         Calcula la nota de un estudiante a partir de los resultados de las pruebas.
@@ -59,17 +91,21 @@ class Assignment:
         else:
             grade = 0.0
 
-        # TODO: Hay que quitar 0.5 si se hace el mismo dia de la clase
-        # si pasa mas de un dia hay que quitar 0.5 cada 12 horas
-        # if "(late submission)" in submission_date:
-        #     grade -= 0.5
+        date_obj = datetime.strptime(date, "%m/%d/%Y").date()
+        time_obj = datetime.strptime(time, "%I:%M:%S %p").time()
 
-        return round(grade * 2) / 2
+        due_dt = datetime.combine(date_obj, time_obj)
+        penalty = self.calculate_penalty(due_dt)
+        grade -= penalty
+        return floor(grade)
+        # return round(grade * 2) / 2
 
     def grade_students(self):
         """Calcula la nota de todos los estudiantes según calculate_grade y lo guarda en el data frame"""
         for i, row in self.df.iterrows():
-            grade = self.calculate_grade(row["Test Result"], row["Submission Date"])
+            grade = self.calculate_grade(
+                row["Test Result"], row["Submission Date"], row["Submission Hour"]
+            )
             self.df.loc[i, "Grade"] = grade
 
     def get_assignment_name(self):
