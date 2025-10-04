@@ -9,7 +9,7 @@ import pandas as pd
 
 
 class Assignment:
-    """Calcular las asignaciones de OnlineGDB"""
+    """Calcula las asignaciones de OnlineGDB"""
 
     def __init__(self, path: str):
         """
@@ -57,10 +57,9 @@ class Assignment:
     ) -> float:
         """
         Calcula la nota de un estudiante a partir de los resultados de las pruebas.
-        - Máxima nota: 5.0 (todas las pruebas se pasaron)
-        - Nota mínima: 0.0 (no paso ninguna prueba o dio error de compilación)
-        - Penalización por entrega tardía: -0.5
-        - Escala de curva por parámetro k (0.5 generoso, 1 lineal, 2 duro)
+        Se utiliza la siguiente función para calcular la nota f(p,t) = 5 * (p/t)**k
+        donde p = test_pasados, t = test_totales y k es un argumento para cambiar la nota.
+        k = 1 no altera la nota, k < 1 es más generoso y k > 1 es más duro.
         """
         if result.strip().lower() == "compile error":
             return 0.0
@@ -82,6 +81,10 @@ class Assignment:
         return ceil(grade * 2) / 2
 
     def _calculate_penalty(self, sub_dt) -> float:
+        """
+        Si el estudiante entrega fuera de la hora limite tiene una penalización.
+        0.5 si lo entrega el mismo día y si lo entrega el día despues de agrega 0.5 cada 12 horas.
+        """
         name = self.name()
 
         with open("due_dates.json", "r") as file:
@@ -126,7 +129,6 @@ class Assignment:
     def get_student_grade(self, student_name: str) -> float:
         """Devuelve la nota que saco el estudiante, si el estudiante no presento la tarea la nota es 0"""
         matches = self._df.index[self._df["Submitted By"] == student_name]
-        # TODO: Caso si hay dos estudiantes con el mismo nombre
         if len(matches) > 0:
             return float(self._df.at[matches[0], "Grade"])
         return 0.0

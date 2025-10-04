@@ -8,7 +8,7 @@ from src.assignment import Assignment
 
 
 class Notes:
-    """Clase para almacenar todas las notas en un solo archivo"""
+    """Almacena todas las notas en un solo archivo"""
 
     def __init__(self, folder: str):
         """
