@@ -23,6 +23,10 @@ class Notes:
     def df_list(self):
         return self._df_list
 
+    @df_list.setter
+    def df_list(self, new_list):
+        self._df_list = new_list
+
     def _sort_order(self, s: str):
         """Ordenamiento de las asignaciones primero por número luego por nombre."""
         return [
@@ -34,12 +38,12 @@ class Notes:
         """
         Carga todos los archivos .csv en la carpeta dada al constructor."""
         pattern = os.path.join(self._folder, "*.csv")
-        files = glob.glob(pattern)
+        files = glob(pattern)
 
         self.df_list = [Assignment(f) for f in files]
         self.df_list.sort(key=lambda a: self._sort_order(a.name()))
 
-        print(f"Cargadas {len(self.df_list)} tareas de {self._folder}")
+        print(f"Se cargaron {len(self.df_list)} tareas de {self._folder}")
 
     def save_notes(self, file_name):
         """Guarda todas las notas en un solo archivo"""

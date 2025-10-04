@@ -2,7 +2,7 @@ import json
 import os
 import re
 from datetime import datetime, timedelta
-from math import floor
+from math import ceil
 from typing import List
 
 import pandas as pd
@@ -79,7 +79,7 @@ class Assignment:
         sub_dt = datetime.combine(date_obj, time_obj)
         penalty = self._calculate_penalty(sub_dt)
         grade -= penalty
-        return floor(grade)
+        return ceil(grade * 2) / 2
 
     def _calculate_penalty(self, sub_dt) -> float:
         name = self.name()
@@ -147,4 +147,4 @@ class Assignment:
 
         # Guarda como CSV
         self._df.to_csv(output_path, index=False, encoding="utf-8")
-        print(f" Archivo guardado en {output_path}")
+        print(f"Archivo guardado en {output_path}")
