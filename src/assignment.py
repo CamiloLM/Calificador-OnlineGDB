@@ -7,6 +7,8 @@ from typing import List
 
 import pandas as pd
 
+import settings
+
 
 class Assignment:
     """Calcula las asignaciones de OnlineGDB"""
@@ -18,7 +20,7 @@ class Assignment:
         self._path = path
         self._df = pd.read_csv(path, encoding="utf-8", sep=",")
         self._df["Grade"] = self._df["Grade"].astype(float)
-        self._clean_dates()
+        self._clean_file()
 
     def __str__(self):
         return self._df.to_string(index=False)
@@ -31,9 +33,9 @@ class Assignment:
     def path(self):
         return self._path
 
-    def _clean_dates(self) -> None:
+    def _clean_file(self) -> None:
         """
-        Normaliza las fechas y las separa de las horas.
+        Normaliza las fechas, las separa de las horas y unifica los formatos.
         """
         pattern = r"(?P<date>\d{1,2}/\d{1,2}/\d{4}),\s+(?P<hour>\d{1,2}:\d{2}:\d{2}\s+[APM]{2})"
 
@@ -42,6 +44,14 @@ class Assignment:
 
         self.df["Submission Date"] = extracted["date"]
         self.df["Submission Hour"] = extracted["hour"]
+
+        # Cambia el CSV de "submissions done" a el formato "pending for evaluation"
+        if "Student" in self.df.columns and "Submitted By" not in self.df.columns:
+            self.df.rename(columns={"Student": "Submitted By"}, inplace=True)
+
+        # Quita la columna "Evaluated"
+        if "Evaluated" in self.df.columns:
+            self.df.drop(columns=["Evaluated"], inplace=True)
 
     def grade_students(self) -> None:
         """Calcula la nota de todos los estudiantes."""
@@ -87,7 +97,7 @@ class Assignment:
         """
         name = self.name()
 
-        with open("due_dates.json", "r") as file:
+        with open(settings.DUE_DATES_PATH, "r") as file:
             data = json.load(file)
 
         due_str = data.get(name)
