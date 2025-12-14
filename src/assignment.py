@@ -19,7 +19,6 @@ class Assignment:
         """
         self._path = path
         self._df = pd.read_csv(path, encoding="utf-8", sep=",")
-        self._df["Grade"] = self._df["Grade"].astype(float)
         self._clean_file()
 
     def __str__(self):
@@ -52,6 +51,11 @@ class Assignment:
         # Quita la columna "Evaluated"
         if "Evaluated" in self.df.columns:
             self.df.drop(columns=["Evaluated"], inplace=True)
+
+        # Asegura que la columna 'Grade' exista y sea float
+        if "Grade" not in self.df.columns:
+            self.df["Grade"] = 0.0
+        self.df["Grade"] = self.df["Grade"].astype(float)
 
     def grade_students(self) -> None:
         """Calcula la nota de todos los estudiantes."""
