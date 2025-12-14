@@ -1,8 +1,3 @@
-exports/
-graded/
-due_dates.json
-notes.csv
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
